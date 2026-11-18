@@ -1,0 +1,62 @@
+# =============================================================================
+#  Domy — agenda (iCloud via CalDAV)
+# =============================================================================
+#  Prérequis (voir docs/03-agenda-icloud.md) :
+#    - intégration CalDAV ajoutée depuis l'interface avec iCloud
+#    - les calendriers renommés en calendar.personnel et calendar.ecoles
+#
+#  Ce package lit le calendrier des écoles toutes les 15 minutes et expose :
+#    - la prochaine intervention (titre, début, lieu)
+#    - le nombre d'heures de cours sur les 14 prochains jours (base du futur
+#      suivi auto-entrepreneur)
+# =============================================================================
+
+template:
+  - triggers:
+      - trigger: homeassistant
+        event: start
+      - trigger: time_pattern
+        minutes: /15
+    actions:
+      - action: calendar.get_events
+        target:
+          entity_id: calendar.ecoles
+        data:
+          duration:
+            days: 14
+        response_variable: agenda_ecoles
+        continue_on_error: true
+    sensor:
+      - name: Prochaine intervention école
+        unique_id: domy_prochaine_intervention_ecole
+        icon: mdi:school
+        state: >
+          {% set evs = agenda_ecoles['calendar.ecoles'].events
+             if agenda_ecoles is defined and 'calendar.ecoles' in agenda_ecoles else [] %}
+          {% set evs = evs | sort(attribute='start') %}
+          {{ (evs | first).summary[:255] if evs | count > 0 else 'Aucune' }}
+        attributes:
+          debut: >
+            {% set evs = agenda_ecoles['calendar.ecoles'].events
+               if agenda_ecoles is defined and 'calendar.ecoles' in agenda_ecoles else [] %}
+            {% set evs = evs | sort(attribute='start') %}
+            {{ as_local(as_datetime((evs | first).start)).isoformat() if evs | count > 0 else none }}
+          lieu: >
+            {% set evs = agenda_ecoles['calendar.ecoles'].events
+               if agenda_ecoles is defined and 'calendar.ecoles' in agenda_ecoles else [] %}
+            {% set evs = evs | sort(attribute='start') %}
+            {{ (evs | first).location | default('', true) if evs | count > 0 else '' }}
+
+      - name: Heures de cours sur 14 jours
+        unique_id: domy_heures_cours_14j
+        icon: mdi:clock-outline
+        unit_of_measurement: h
+        state_class: measurement
+        state: >
+          {% set evs = agenda_ecoles['calendar.ecoles'].events
+             if agenda_ecoles is defined and 'calendar.ecoles' in agenda_ecoles else [] %}
+          {% set ns = namespace(sec=0) %}
+          {% for e in evs if 'T' in e.start %}
+            {% set ns.sec = ns.sec + (as_datetime(e.end) - as_datetime(e.start)).total_seconds() %}
+          {% endfor %}
+          {{ (ns.sec / 3600) | round(1) }}

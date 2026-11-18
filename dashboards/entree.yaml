@@ -1,0 +1,74 @@
+# =============================================================================
+#  Domy — tableau de bord de l'iPad mural (entrée)
+# =============================================================================
+#  Pensé pour un iPad en mode paysage, lu à 1–2 mètres : grandes tuiles,
+#  peu d'informations, uniquement ce qui sert en passant la porte.
+#  Les sections « Maison » se rempliront au fur et à mesure des objets ajoutés.
+# =============================================================================
+title: Entrée
+views:
+  - title: Accueil
+    path: accueil
+    icon: mdi:home
+    type: sections
+    max_columns: 3
+    theme: Domy mural
+    sections:
+      # --- Colonne 1 : l'essentiel en passant la porte --------------------------
+      - type: grid
+        cards:
+          - type: markdown
+            text_only: true
+            content: >
+              # {{ states('sensor.salutation') }} {{ user }}
+
+              ## {{ now().strftime('%H:%M') }}
+
+              {%- set jours = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'] %}
+              {%- set mois = ['janvier','février','mars','avril','mai','juin','juillet',
+                              'août','septembre','octobre','novembre','décembre'] %}
+
+              {{ jours[now().weekday()] | capitalize }} {{ now().day }} {{ mois[now().month - 1] }}
+          - type: weather-forecast
+            entity: weather.forecast_maison
+            forecast_type: daily
+            show_current: true
+            show_forecast: true
+          - type: tile
+            entity: input_select.domy_mode_maison
+            name: Mode maison
+            vertical: false
+            features_position: bottom
+            features:
+              - type: select-options
+
+      # --- Colonne 2 : agenda ---------------------------------------------------
+      - type: grid
+        cards:
+          - type: heading
+            heading: Agenda
+            icon: mdi:calendar
+          - type: tile
+            entity: sensor.prochaine_intervention_ecole
+            name: Prochaine intervention
+          - type: tile
+            entity: sensor.heures_de_cours_sur_14_jours
+            name: Cours (14 jours)
+          - type: calendar
+            initial_view: listWeek
+            entities:
+              - calendar.personnel
+              - calendar.ecoles
+
+      # --- Colonne 3 : maison (à venir) ----------------------------------------
+      - type: grid
+        cards:
+          - type: heading
+            heading: Maison
+            icon: mdi:home-lightning-bolt
+          - type: markdown
+            content: >
+              Aucun objet connecté pour l'instant.
+
+              Les lumières, le chauffage et les capteurs apparaîtront ici
+              au fil des étapes.

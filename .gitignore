@@ -1,0 +1,24 @@
+# Secrets — ne jamais versionner
+secrets.yaml
+*.pem
+*.key
+
+# Données d'exécution de Home Assistant
+.storage/
+.cloud/
+.HA_VERSION
+home-assistant_v2.db*
+home-assistant.log*
+*.log
+*.db
+*.db-shm
+*.db-wal
+deps/
+tts/
+backups/
+www/community/
+blueprints/
+zigbee2mqtt/
+__pycache__/
+.venv/
+.DS_Store

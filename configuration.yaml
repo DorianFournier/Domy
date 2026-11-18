@@ -1,0 +1,49 @@
+# =============================================================================
+#  Domy — configuration principale de Home Assistant
+# =============================================================================
+#  Ce dépôt EST le dossier /config de Home Assistant. Il est déployé sur le
+#  serveur avec l'add-on « Git pull » (voir docs/01-installation.md).
+#
+#  Organisation :
+#    - packages/    : une fonctionnalité = un fichier (helpers, capteurs,
+#                     automatisations regroupés par domaine)
+#    - dashboards/  : tableaux de bord en YAML (dont celui de l'iPad d'entrée)
+#    - custom_components/ : intégrations Python développées pour Domy
+# =============================================================================
+
+# Active les intégrations de base (historique, énergie, application mobile,
+# découverte réseau, etc.).
+default_config:
+
+homeassistant:
+  name: Domy
+  latitude: !secret home_latitude
+  longitude: !secret home_longitude
+  elevation: !secret home_elevation
+  unit_system: metric
+  currency: EUR
+  country: FR
+  time_zone: Europe/Paris
+  language: fr
+  # Chaque fichier de packages/ devient un « package » nommé d'après le fichier.
+  packages: !include_dir_named packages
+
+# Thèmes personnalisés (dont le thème du tableau mural).
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Tableaux de bord versionnés. Celui de l'entrée est pensé pour l'iPad mural.
+lovelace:
+  dashboards:
+    domy-entree:
+      mode: yaml
+      title: Entrée
+      icon: mdi:tablet-dashboard
+      show_in_sidebar: true
+      filename: dashboards/entree.yaml
+
+# Fichiers gérés par l'interface graphique (on garde la possibilité de créer
+# des automatisations à la souris, pratique pour apprendre).
+automation ui: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

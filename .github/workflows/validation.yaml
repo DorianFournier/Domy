@@ -1,0 +1,33 @@
+name: Validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  yamllint:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: yamllint
+        run: |
+          pip install yamllint
+          yamllint .
+
+  home-assistant:
+    name: Vérification Home Assistant
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [stable, beta]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Préparer les secrets de test
+        run: cp secrets.yaml.example secrets.yaml
+      - name: check_config
+        uses: frenck/action-home-assistant@v1
+        with:
+          path: "."
+          secrets: secrets.yaml
+          version: "${{ matrix.version }}"

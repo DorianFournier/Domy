@@ -1,0 +1,64 @@
+# =============================================================================
+#  Domy — cœur : mode de la maison
+# =============================================================================
+#  Le « mode maison » est l'état global que les autres modules consultent
+#  (ex. : pas de notification de sport en mode Vacances, lumières coupées en
+#  mode Absent…). Il se change depuis l'iPad de l'entrée.
+# =============================================================================
+
+input_select:
+  domy_mode_maison:
+    name: Mode maison
+    icon: mdi:home-switch
+    options:
+      - Présent
+      - Absent
+      - Nuit
+      - Vacances
+
+template:
+  - sensor:
+      - name: Salutation
+        unique_id: domy_salutation
+        icon: mdi:hand-wave
+        state: >
+          {% set h = now().hour %}
+          {% if h < 5 %}Bonne nuit
+          {% elif h < 12 %}Bonjour
+          {% elif h < 18 %}Bon après-midi
+          {% else %}Bonsoir{% endif %}
+
+automation:
+  - id: domy_mode_nuit_auto
+    alias: "Domy · Passage automatique en mode Nuit"
+    description: "À 23h30, si on est à la maison, on bascule en mode Nuit."
+    triggers:
+      - trigger: time
+        at: "23:30:00"
+    conditions:
+      - condition: state
+        entity_id: input_select.domy_mode_maison
+        state: Présent
+    actions:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.domy_mode_maison
+        data:
+          option: Nuit
+
+  - id: domy_mode_reveil_auto
+    alias: "Domy · Fin du mode Nuit au réveil"
+    description: "À 7h00, le mode Nuit repasse en Présent."
+    triggers:
+      - trigger: time
+        at: "07:00:00"
+    conditions:
+      - condition: state
+        entity_id: input_select.domy_mode_maison
+        state: Nuit
+    actions:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.domy_mode_maison
+        data:
+          option: Présent

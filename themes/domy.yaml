@@ -1,0 +1,15 @@
+# Thème sombre pour le tableau mural : contraste élevé, lisible de loin,
+# et moins éblouissant le soir dans l'entrée.
+Domy mural:
+  primary-color: "#4fc3f7"
+  accent-color: "#ffb74d"
+  primary-background-color: "#0f1115"
+  secondary-background-color: "#171a21"
+  card-background-color: "#1c2029"
+  ha-card-border-radius: "18px"
+  ha-card-box-shadow: "none"
+  primary-text-color: "#eceff4"
+  secondary-text-color: "#9aa3b2"
+  state-icon-color: "#9aa3b2"
+  app-header-background-color: "#0f1115"
+  app-header-text-color: "#eceff4"
